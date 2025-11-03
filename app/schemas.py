@@ -39,7 +39,7 @@ class DetectionBase(BaseModel):
     is_person: bool = False
     match_score: float = 0.0
     snapshot_path: Optional[Path] = None
-    metadata: Optional[Any] = None
+    metadata: Optional[Any] = Field(None, alias="event_metadata")
 
 
 class DetectionRead(DetectionBase):
@@ -49,6 +49,7 @@ class DetectionRead(DetectionBase):
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
 
 
 class WatchlistResponse(BaseModel):
