@@ -33,7 +33,7 @@ def record_detection(
             is_person=watchlist_entry.is_person if watchlist_entry else False,
             match_score=match_score,
             snapshot_path=snapshot_path.name if snapshot_path else None,
-            metadata=metadata or {},
+            event_metadata=metadata or {},
             created_at=datetime.utcnow(),
         )
         session.add(event)

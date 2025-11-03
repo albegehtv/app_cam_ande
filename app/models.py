@@ -40,7 +40,7 @@ class DetectionEvent(Base):
     is_person = Column(Boolean, default=False)
     match_score = Column(Float, default=0.0)
     snapshot_path = Column(String(512), nullable=True)
-    metadata = Column(JSON, nullable=True)
+    event_metadata = Column("metadata", JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     watchlist_entry = relationship("WatchlistEntry", back_populates="detections")
