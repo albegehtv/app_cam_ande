@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de vigilancia</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Sistema de vigilancia vehicular</h1>
+    </header>
+    <main>
+        <section class="form-section">
+            <h2>Agregar vehículo o persona de interés</h2>
+            <form action="/panel/watchlist" method="post" enctype="multipart/form-data">
+                <div class="field">
+                    <label>Nombre</label>
+                    <input type="text" name="label" required>
+                </div>
+                <div class="field">
+                    <label>Tipo de vehículo</label>
+                    <input type="text" name="vehicle_type" placeholder="auto, camioneta, camión...">
+                </div>
+                <div class="field">
+                    <label>Color principal</label>
+                    <input type="text" name="color_name" placeholder="rojo, azul...">
+                </div>
+                <div class="field">
+                    <label>Modelo / referencia</label>
+                    <input type="text" name="model_name">
+                </div>
+                <div class="field-inline">
+                    <label><input type="checkbox" name="has_logo"> Tiene logo</label>
+                    <label><input type="checkbox" name="is_person"> Persona</label>
+                </div>
+                <div class="field">
+                    <label>Imagen de referencia</label>
+                    <input type="file" name="image" accept="image/*" required>
+                </div>
+                <button type="submit">Guardar</button>
+            </form>
+        </section>
+        <section class="list-section">
+            <h2>Lista de vigilancia</h2>
+            <div class="cards">
+                {% for item in watchlist %}
+                <article class="card">
+                    <img src="{{ url_for('watchlist_image', filename=item.image_path) }}" alt="{{ item.label }}" />
+                    <div class="card-body">
+                        <h3>{{ item.label }}</h3>
+                        <p>Tipo: {{ item.vehicle_type or 'desconocido' }}</p>
+                        <p>Color: {{ item.color_name or 'desconocido' }}</p>
+                        <p>Modelo: {{ item.model_name or 'n/a' }}</p>
+                        <p>Logo: {{ 'Sí' if item.has_logo else 'No' }}</p>
+                        <p>Persona: {{ 'Sí' if item.is_person else 'No' }}</p>
+                    </div>
+                </article>
+                {% else %}
+                <p>No hay elementos en la lista de vigilancia.</p>
+                {% endfor %}
+            </div>
+        </section>
+        <section class="list-section">
+            <h2>Últimos eventos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Detectado</th>
+                        <th>Referencia</th>
+                        <th>Coincidencia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detection in detections %}
+                    <tr>
+                        <td>{{ detection.created_at }}</td>
+                        <td>{{ detection.detected_label }}</td>
+                        <td>{{ detection.watchlist_entry.label if detection.watchlist_entry else 'sin coincidencia' }}</td>
+                        <td>{{ '%.2f'|format(detection.match_score) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4">No se registraron eventos.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+</html>

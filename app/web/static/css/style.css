@@ -1,0 +1,94 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #0f172a;
+    color: #f8fafc;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #1e293b;
+    padding: 1.5rem 2rem;
+    text-align: center;
+}
+
+main {
+    padding: 2rem;
+    display: grid;
+    gap: 2rem;
+}
+
+.form-section, .list-section {
+    background-color: #1e293b;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.4);
+}
+
+.field, .field-inline {
+    margin-bottom: 1rem;
+}
+
+.field label, .field-inline label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.field-inline label {
+    display: inline-block;
+    margin-right: 1rem;
+}
+
+input[type="text"], input[type="file"] {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: none;
+}
+
+button {
+    background-color: #3b82f6;
+    color: #ffffff;
+    border: none;
+    padding: 0.7rem 1.4rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.card {
+    background-color: #0f172a;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.6);
+}
+
+.card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+table th {
+    text-align: left;
+    background-color: rgba(59, 130, 246, 0.15);
+}

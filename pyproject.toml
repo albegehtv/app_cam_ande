@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vehicular-guard"
+version = "0.1.0"
+description = "Sistema de vigilancia vehicular con detección asistida por IA"
+readme = "README.md"
+authors = [{ name = "Sistema Autónomo" }]
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy",
+    "sqlmodel",
+    "pydantic",
+    "jinja2",
+    "opencv-python",
+    "numpy",
+    "ultralytics",
+    "simpleaudio",
+]
+
+[project.optional-dependencies]
+relay = ["gpiozero"]
+
+[project.scripts]
+vehicular-guard = "app.detector_runner:main"
