@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Panel de vigilancia inteligente · Cam&Ande{% endblock %}
+{% block main_class %}layout has-sidebar{% endblock %}
 
 {% block hero %}
 <section class="hero">
@@ -12,182 +13,223 @@
 </section>
 {% endblock %}
 
-{% block content %}
-<section class="panel glass summary-panel">
-    <div class="stats-grid">
-        <article class="stat-card">
-            <span class="stat-label">Elementos vigilados</span>
-            <span class="stat-value">{{ watchlist|length }}</span>
-            <span class="stat-hint">Personas o vehículos en tu lista de seguimiento.</span>
-        </article>
-        <article class="stat-card">
-            <span class="stat-label">Eventos recientes</span>
-            <span class="stat-value">{{ detections|length }}</span>
-            <span class="stat-hint">Coincidencias detectadas en las últimas horas.</span>
-        </article>
-        <article class="stat-card">
-            <span class="stat-label">Estado de la cámara</span>
-            <span class="stat-value">{{ 'Conectada' if camera_state['connected'] else 'Desconectada' }}</span>
-            <span class="stat-hint">Última conexión: {{ camera_state['last_connected_at'] or '—' }}</span>
-        </article>
+{% block layout_content %}
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <p class="sidebar-kicker">Navegación</p>
+        <h2>Panel de control</h2>
+        <p class="sidebar-lead">Explora rápidamente cada módulo operativo del sistema inteligente.</p>
     </div>
-</section>
+    <nav class="sidebar-nav" aria-label="Secciones del panel">
+        <span class="sidebar-section-title">Módulos</span>
+        <ul>
+            <li><a class="is-active" href="#resumen">Resumen general</a></li>
+            <li><a href="#control-camara">Control de cámara</a></li>
+            <li><a href="#agregar-referencia">Agregar referencias</a></li>
+            <li><a href="#lista-vigilancia">Lista de vigilancia</a></li>
+            <li><a href="#eventos-recientes">Eventos recientes</a></li>
+        </ul>
+    </nav>
+    <div class="sidebar-card">
+        <h3>Estado rápido</h3>
+        <dl>
+            <div>
+                <dt>Cámara</dt>
+                <dd>{{ 'Conectada' if camera_state['connected'] else 'Desconectada' }}</dd>
+            </div>
+            <div>
+                <dt>Vigilados</dt>
+                <dd>{{ watchlist|length }}</dd>
+            </div>
+            <div>
+                <dt>Eventos hoy</dt>
+                <dd>{{ detections|length }}</dd>
+            </div>
+        </dl>
+    </div>
+    <div class="sidebar-footer">
+        <p>¿Necesitas ayuda? <a href="mailto:soporte@camande.ai">Escríbenos</a> y te asesoramos en la configuración.</p>
+    </div>
+</aside>
+<div class="dashboard-main">
+    {% block content %}
+    <section id="resumen" class="panel glass summary-panel">
+        <div class="stats-grid">
+            <article class="stat-card">
+                <span class="stat-label">Elementos vigilados</span>
+                <span class="stat-value">{{ watchlist|length }}</span>
+                <span class="stat-hint">Personas o vehículos en tu lista de seguimiento.</span>
+            </article>
+            <article class="stat-card">
+                <span class="stat-label">Eventos recientes</span>
+                <span class="stat-value">{{ detections|length }}</span>
+                <span class="stat-hint">Coincidencias detectadas en las últimas horas.</span>
+            </article>
+            <article class="stat-card">
+                <span class="stat-label">Estado de la cámara</span>
+                <span class="stat-value">{{ 'Conectada' if camera_state['connected'] else 'Desconectada' }}</span>
+                <span class="stat-hint">Última conexión: {{ camera_state['last_connected_at'] or '—' }}</span>
+            </article>
+        </div>
+    </section>
 
-<section class="panel glass camera-panel">
-    <div class="panel-header">
-        <div>
-            <h2>Control de cámara</h2>
-            <p class="panel-subtitle">Conecta tu fuente de video y ajusta los parámetros en tiempo real.</p>
+    <section id="control-camara" class="panel glass camera-panel">
+        <div class="panel-header">
+            <div>
+                <h2>Control de cámara</h2>
+                <p class="panel-subtitle">Conecta tu fuente de video y ajusta los parámetros en tiempo real.</p>
+            </div>
+            <span class="status-pill {{ 'connected' if camera_state['connected'] else 'disconnected' }}" data-status-pill>
+                {{ 'Conectada' if camera_state['connected'] else 'Desconectada' }}
+            </span>
         </div>
-        <span class="status-pill {{ 'connected' if camera_state['connected'] else 'disconnected' }}" data-status-pill>
-            {{ 'Conectada' if camera_state['connected'] else 'Desconectada' }}
-        </span>
-    </div>
-    <div class="status-grid">
-        <div>
-            <span class="status-label">Fuente actual</span>
-            <span class="status-value" data-camera-source>{{ camera_state['source'] }}</span>
+        <div class="status-grid">
+            <div>
+                <span class="status-label">Fuente actual</span>
+                <span class="status-value" data-camera-source>{{ camera_state['source'] }}</span>
+            </div>
+            <div>
+                <span class="status-label">Última conexión</span>
+                <span class="status-value" data-camera-last-connection>{{ camera_state['last_connected_at'] or '—' }}</span>
+            </div>
+            <div>
+                <span class="status-label">Confianza mínima</span>
+                <span class="status-value" data-camera-confidence>{{ '%.2f'|format(camera_state['min_confidence']) }}</span>
+            </div>
+            <div>
+                <span class="status-label">Salto de cuadros</span>
+                <span class="status-value" data-camera-frame-skip>{{ camera_state['frame_skip'] }}</span>
+            </div>
         </div>
-        <div>
-            <span class="status-label">Última conexión</span>
-            <span class="status-value" data-camera-last-connection>{{ camera_state['last_connected_at'] or '—' }}</span>
-        </div>
-        <div>
-            <span class="status-label">Confianza mínima</span>
-            <span class="status-value" data-camera-confidence>{{ '%.2f'|format(camera_state['min_confidence']) }}</span>
-        </div>
-        <div>
-            <span class="status-label">Salto de cuadros</span>
-            <span class="status-value" data-camera-frame-skip>{{ camera_state['frame_skip'] }}</span>
-        </div>
-    </div>
-    <form id="camera-settings-form" class="grid-form">
-        <div class="field">
-            <label for="camera-source">URL / índice de cámara</label>
-            <input id="camera-source" type="text" name="source" value="{{ camera_state['source'] }}" placeholder="rtsp://usuario:clave@ip:puerto/stream">
-        </div>
-        <div class="field-group">
+        <form id="camera-settings-form" class="grid-form">
             <div class="field">
-                <label for="camera-frame-skip">Procesar cada (frames)</label>
-                <input id="camera-frame-skip" type="number" min="1" value="{{ camera_state['frame_skip'] }}">
+                <label for="camera-source">URL / índice de cámara</label>
+                <input id="camera-source" type="text" name="source" value="{{ camera_state['source'] }}" placeholder="rtsp://usuario:clave@ip:puerto/stream">
             </div>
-            <div class="field">
-                <label for="camera-confidence">Confianza mínima</label>
-                <input id="camera-confidence" type="number" min="0" max="1" step="0.01" value="{{ '%.2f'|format(camera_state['min_confidence']) }}">
-            </div>
-        </div>
-        <div class="button-row">
-            <button type="button" class="btn primary" data-endpoint="connect">Conectar</button>
-            <button type="button" class="btn secondary" data-endpoint="update">Actualizar ajustes</button>
-            <button type="button" class="btn ghost" data-endpoint="disconnect">Desconectar</button>
-        </div>
-    </form>
-    <p class="help-text">Introduce la URL RTSP o el índice numérico de la cámara que deseas gestionar. Ajusta la sensibilidad y el salto de cuadros para equilibrar rendimiento y precisión.</p>
-    <p class="status-note" data-camera-feedback></p>
-    <p class="error-message" data-camera-error>{{ camera_state['last_error'] or '' }}</p>
-</section>
-
-<section class="panel glass form-panel">
-    <h2>Agregar vehículo o persona de interés</h2>
-    <p class="panel-subtitle">Construye una base sólida de vigilancia con imágenes de referencia claras.</p>
-    <form action="/panel/watchlist" method="post" enctype="multipart/form-data" class="stacked-form">
-        <div class="field">
-            <label>Nombre</label>
-            <input type="text" name="label" required placeholder="Patente, alias o referencia">
-        </div>
-        <div class="field-group">
-            <div class="field">
-                <label>Tipo de vehículo</label>
-                <input type="text" name="vehicle_type" placeholder="auto, camioneta, camión...">
-            </div>
-            <div class="field">
-                <label>Color principal</label>
-                <input type="text" name="color_name" placeholder="rojo, azul...">
-            </div>
-        </div>
-        <div class="field-group">
-            <div class="field">
-                <label>Modelo / referencia</label>
-                <input type="text" name="model_name" placeholder="Hilux, civic, etc.">
-            </div>
-            <div class="field check-group">
-                <label><input type="checkbox" name="has_logo"> Tiene logo</label>
-                <label><input type="checkbox" name="is_person"> Persona</label>
-            </div>
-        </div>
-        <div class="field">
-            <label>Imagen de referencia</label>
-            <input type="file" name="image" accept="image/*" required>
-        </div>
-        <button type="submit" class="btn primary">Guardar en la lista</button>
-    </form>
-</section>
-
-<section class="panel glass watchlist-panel">
-    <div class="panel-header">
-        <div>
-            <h2>Lista de vigilancia</h2>
-            <p class="panel-subtitle">Visualiza rápidamente los perfiles que están siendo monitoreados.</p>
-        </div>
-        <span class="badge">{{ watchlist|length }} activos</span>
-    </div>
-    <div class="cards">
-        {% for item in watchlist %}
-        <article class="card">
-            <img src="{{ url_for('watchlist_image', filename=item.image_path) }}" alt="{{ item.label }}" />
-            <div class="card-body">
-                <h3>{{ item.label }}</h3>
-                <ul class="card-meta">
-                    <li><span>Tipo</span><strong>{{ item.vehicle_type or 'Desconocido' }}</strong></li>
-                    <li><span>Color</span><strong>{{ item.color_name or 'Desconocido' }}</strong></li>
-                    <li><span>Modelo</span><strong>{{ item.model_name or 'N/A' }}</strong></li>
-                </ul>
-                <div class="chip-group">
-                    <span class="chip {{ 'success' if item.has_logo else 'neutral' }}">Logo {{ 'sí' if item.has_logo else 'no' }}</span>
-                    <span class="chip {{ 'warning' if item.is_person else 'neutral' }}">{{ 'Persona' if item.is_person else 'Vehículo' }}</span>
+            <div class="field-group">
+                <div class="field">
+                    <label for="camera-frame-skip">Procesar cada (frames)</label>
+                    <input id="camera-frame-skip" type="number" min="1" value="{{ camera_state['frame_skip'] }}">
+                </div>
+                <div class="field">
+                    <label for="camera-confidence">Confianza mínima</label>
+                    <input id="camera-confidence" type="number" min="0" max="1" step="0.01" value="{{ '%.2f'|format(camera_state['min_confidence']) }}">
                 </div>
             </div>
-        </article>
-        {% else %}
-        <p class="empty-state">No hay elementos en la lista de vigilancia.</p>
-        {% endfor %}
-    </div>
-</section>
+            <div class="button-row">
+                <button type="button" class="btn primary" data-endpoint="connect">Conectar</button>
+                <button type="button" class="btn secondary" data-endpoint="update">Actualizar ajustes</button>
+                <button type="button" class="btn ghost" data-endpoint="disconnect">Desconectar</button>
+            </div>
+        </form>
+        <p class="help-text">Introduce la URL RTSP o el índice numérico de la cámara que deseas gestionar. Ajusta la sensibilidad y el salto de cuadros para equilibrar rendimiento y precisión.</p>
+        <p class="status-note" data-camera-feedback></p>
+        <p class="error-message" data-camera-error>{{ camera_state['last_error'] or '' }}</p>
+    </section>
 
-<section class="panel glass events-panel">
-    <div class="panel-header">
-        <div>
-            <h2>Últimos eventos</h2>
-            <p class="panel-subtitle">Revisa las detecciones más recientes y analiza su precisión.</p>
+    <section id="agregar-referencia" class="panel glass form-panel">
+        <h2>Agregar vehículo o persona de interés</h2>
+        <p class="panel-subtitle">Construye una base sólida de vigilancia con imágenes de referencia claras.</p>
+        <form action="/panel/watchlist" method="post" enctype="multipart/form-data" class="stacked-form">
+            <div class="field">
+                <label>Nombre</label>
+                <input type="text" name="label" required placeholder="Patente, alias o referencia">
+            </div>
+            <div class="field-group">
+                <div class="field">
+                    <label>Tipo de vehículo</label>
+                    <input type="text" name="vehicle_type" placeholder="auto, camioneta, camión...">
+                </div>
+                <div class="field">
+                    <label>Color principal</label>
+                    <input type="text" name="color_name" placeholder="rojo, azul...">
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field">
+                    <label>Modelo / referencia</label>
+                    <input type="text" name="model_name" placeholder="Hilux, civic, etc.">
+                </div>
+                <div class="field check-group">
+                    <label><input type="checkbox" name="has_logo"> Tiene logo</label>
+                    <label><input type="checkbox" name="is_person"> Persona</label>
+                </div>
+            </div>
+            <div class="field">
+                <label>Imagen de referencia</label>
+                <input type="file" name="image" accept="image/*" required>
+            </div>
+            <button type="submit" class="btn primary">Guardar en la lista</button>
+        </form>
+    </section>
+
+    <section id="lista-vigilancia" class="panel glass watchlist-panel">
+        <div class="panel-header">
+            <div>
+                <h2>Lista de vigilancia</h2>
+                <p class="panel-subtitle">Visualiza rápidamente los perfiles que están siendo monitoreados.</p>
+            </div>
+            <span class="badge">{{ watchlist|length }} activos</span>
         </div>
-    </div>
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Detectado</th>
-                    <th>Referencia</th>
-                    <th>Coincidencia</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for detection in detections %}
-                <tr>
-                    <td>{{ detection.created_at }}</td>
-                    <td>{{ detection.detected_label }}</td>
-                    <td>{{ detection.watchlist_entry.label if detection.watchlist_entry else 'Sin coincidencia' }}</td>
-                    <td>{{ '%.2f'|format(detection.match_score) }}</td>
-                </tr>
-                {% else %}
-                <tr class="empty-row">
-                    <td colspan="4">No se registraron eventos.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</section>
+        <div class="cards">
+            {% for item in watchlist %}
+            <article class="card">
+                <img src="{{ url_for('watchlist_image', filename=item.image_path) }}" alt="{{ item.label }}" />
+                <div class="card-body">
+                    <h3>{{ item.label }}</h3>
+                    <ul class="card-meta">
+                        <li><span>Tipo</span><strong>{{ item.vehicle_type or 'Desconocido' }}</strong></li>
+                        <li><span>Color</span><strong>{{ item.color_name or 'Desconocido' }}</strong></li>
+                        <li><span>Modelo</span><strong>{{ item.model_name or 'N/A' }}</strong></li>
+                    </ul>
+                    <div class="chip-group">
+                        <span class="chip {{ 'success' if item.has_logo else 'neutral' }}">Logo {{ 'sí' if item.has_logo else 'no' }}</span>
+                        <span class="chip {{ 'warning' if item.is_person else 'neutral' }}">{{ 'Persona' if item.is_person else 'Vehículo' }}</span>
+                    </div>
+                </div>
+            </article>
+            {% else %}
+            <p class="empty-state">No hay elementos en la lista de vigilancia.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section id="eventos-recientes" class="panel glass events-panel">
+        <div class="panel-header">
+            <div>
+                <h2>Últimos eventos</h2>
+                <p class="panel-subtitle">Revisa las detecciones más recientes y analiza su precisión.</p>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Detectado</th>
+                        <th>Referencia</th>
+                        <th>Coincidencia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detection in detections %}
+                    <tr>
+                        <td>{{ detection.created_at }}</td>
+                        <td>{{ detection.detected_label }}</td>
+                        <td>{{ detection.watchlist_entry.label if detection.watchlist_entry else 'Sin coincidencia' }}</td>
+                        <td>{{ '%.2f'|format(detection.match_score) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr class="empty-row">
+                        <td colspan="4">No se registraron eventos.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endblock %}
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
