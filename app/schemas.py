@@ -63,3 +63,25 @@ class DetectionResponse(BaseModel):
 class AlarmState(BaseModel):
     visual_alarm_active: bool
     last_alarm_at: Optional[datetime]
+
+
+class CameraState(BaseModel):
+    source: str
+    frame_skip: int
+    min_confidence: float
+    connected: bool
+    last_connected_at: Optional[datetime]
+    last_error: Optional[str]
+
+
+class CameraSettingsUpdate(BaseModel):
+    source: Optional[str] = Field(None, description="Fuente de video para la cámara.")
+    frame_skip: Optional[int] = Field(
+        None, ge=1, description="Procesar únicamente un cuadro de cada N recibidos."
+    )
+    min_confidence: Optional[float] = Field(
+        None,
+        ge=0.0,
+        le=1.0,
+        description="Confianza mínima requerida para aceptar detecciones.",
+    )
