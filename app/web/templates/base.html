@@ -38,7 +38,9 @@
         {% block hero %}{% endblock %}
 
         <main class="{% block main_class %}layout{% endblock %}">
+            {% block layout_content %}
             {% block content %}{% endblock %}
+            {% endblock %}
         </main>
 
         <footer class="footer">
