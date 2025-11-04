@@ -2,89 +2,177 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel de vigilancia</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de vigilancia inteligente</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/dashboard.js" defer></script>
 </head>
 <body>
-    <header>
-        <h1>Sistema de vigilancia vehicular</h1>
-    </header>
-    <main>
-        <section class="form-section">
-            <h2>Agregar vehículo o persona de interés</h2>
-            <form action="/panel/watchlist" method="post" enctype="multipart/form-data">
-                <div class="field">
-                    <label>Nombre</label>
-                    <input type="text" name="label" required>
-                </div>
-                <div class="field">
-                    <label>Tipo de vehículo</label>
-                    <input type="text" name="vehicle_type" placeholder="auto, camioneta, camión...">
-                </div>
-                <div class="field">
-                    <label>Color principal</label>
-                    <input type="text" name="color_name" placeholder="rojo, azul...">
-                </div>
-                <div class="field">
-                    <label>Modelo / referencia</label>
-                    <input type="text" name="model_name">
-                </div>
-                <div class="field-inline">
-                    <label><input type="checkbox" name="has_logo"> Tiene logo</label>
-                    <label><input type="checkbox" name="is_person"> Persona</label>
-                </div>
-                <div class="field">
-                    <label>Imagen de referencia</label>
-                    <input type="file" name="image" accept="image/*" required>
-                </div>
-                <button type="submit">Guardar</button>
-            </form>
-        </section>
-        <section class="list-section">
-            <h2>Lista de vigilancia</h2>
-            <div class="cards">
-                {% for item in watchlist %}
-                <article class="card">
-                    <img src="{{ url_for('watchlist_image', filename=item.image_path) }}" alt="{{ item.label }}" />
-                    <div class="card-body">
-                        <h3>{{ item.label }}</h3>
-                        <p>Tipo: {{ item.vehicle_type or 'desconocido' }}</p>
-                        <p>Color: {{ item.color_name or 'desconocido' }}</p>
-                        <p>Modelo: {{ item.model_name or 'n/a' }}</p>
-                        <p>Logo: {{ 'Sí' if item.has_logo else 'No' }}</p>
-                        <p>Persona: {{ 'Sí' if item.is_person else 'No' }}</p>
-                    </div>
-                </article>
-                {% else %}
-                <p>No hay elementos en la lista de vigilancia.</p>
-                {% endfor %}
+    <div class="page">
+        <header class="hero">
+            <div class="hero-content">
+                <span class="hero-kicker">Plataforma de analítica vehicular</span>
+                <h1>Controla tu red de cámaras con confianza</h1>
+                <p>Administra la conexión de la cámara, gestiona la lista de vigilancia y consulta alertas en un panel moderno pensado para impresionar a tus clientes.</p>
             </div>
-        </section>
-        <section class="list-section">
-            <h2>Últimos eventos</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Detectado</th>
-                        <th>Referencia</th>
-                        <th>Coincidencia</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for detection in detections %}
-                    <tr>
-                        <td>{{ detection.created_at }}</td>
-                        <td>{{ detection.detected_label }}</td>
-                        <td>{{ detection.watchlist_entry.label if detection.watchlist_entry else 'sin coincidencia' }}</td>
-                        <td>{{ '%.2f'|format(detection.match_score) }}</td>
-                    </tr>
+        </header>
+        <main class="layout">
+            <section class="panel glass camera-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Control de cámara</h2>
+                        <p class="panel-subtitle">Conecta tu fuente de video y ajusta los parámetros en tiempo real.</p>
+                    </div>
+                    <span class="status-pill {{ 'connected' if camera_state['connected'] else 'disconnected' }}" data-status-pill>
+                        {{ 'Conectada' if camera_state['connected'] else 'Desconectada' }}
+                    </span>
+                </div>
+                <div class="status-grid">
+                    <div>
+                        <span class="status-label">Fuente actual</span>
+                        <span class="status-value" data-camera-source>{{ camera_state['source'] }}</span>
+                    </div>
+                    <div>
+                        <span class="status-label">Última conexión</span>
+                        <span class="status-value" data-camera-last-connection>{{ camera_state['last_connected_at'] or '—' }}</span>
+                    </div>
+                    <div>
+                        <span class="status-label">Confianza mínima</span>
+                        <span class="status-value" data-camera-confidence>{{ '%.2f'|format(camera_state['min_confidence']) }}</span>
+                    </div>
+                    <div>
+                        <span class="status-label">Salto de cuadros</span>
+                        <span class="status-value" data-camera-frame-skip>{{ camera_state['frame_skip'] }}</span>
+                    </div>
+                </div>
+                <form id="camera-settings-form" class="grid-form">
+                    <div class="field">
+                        <label for="camera-source">URL / índice de cámara</label>
+                        <input id="camera-source" type="text" name="source" value="{{ camera_state['source'] }}" placeholder="rtsp://usuario:clave@ip:puerto/stream">
+                    </div>
+                    <div class="field-group">
+                        <div class="field">
+                            <label for="camera-frame-skip">Procesar cada (frames)</label>
+                            <input id="camera-frame-skip" type="number" min="1" value="{{ camera_state['frame_skip'] }}">
+                        </div>
+                        <div class="field">
+                            <label for="camera-confidence">Confianza mínima</label>
+                            <input id="camera-confidence" type="number" min="0" max="1" step="0.01" value="{{ '%.2f'|format(camera_state['min_confidence']) }}">
+                        </div>
+                    </div>
+                    <div class="button-row">
+                        <button type="button" class="btn primary" data-endpoint="connect">Conectar</button>
+                        <button type="button" class="btn secondary" data-endpoint="update">Actualizar ajustes</button>
+                        <button type="button" class="btn ghost" data-endpoint="disconnect">Desconectar</button>
+                    </div>
+                </form>
+                <p class="help-text">Introduce la URL RTSP o el índice numérico de la cámara que deseas gestionar. Ajusta la sensibilidad y el salto de cuadros para equilibrar rendimiento y precisión.</p>
+                <p class="status-note" data-camera-feedback></p>
+                <p class="error-message" data-camera-error>{{ camera_state['last_error'] or '' }}</p>
+            </section>
+
+            <section class="panel glass form-panel">
+                <h2>Agregar vehículo o persona de interés</h2>
+                <p class="panel-subtitle">Construye una base sólida de vigilancia con imágenes de referencia claras.</p>
+                <form action="/panel/watchlist" method="post" enctype="multipart/form-data" class="stacked-form">
+                    <div class="field">
+                        <label>Nombre</label>
+                        <input type="text" name="label" required placeholder="Patente, alias o referencia">
+                    </div>
+                    <div class="field-group">
+                        <div class="field">
+                            <label>Tipo de vehículo</label>
+                            <input type="text" name="vehicle_type" placeholder="auto, camioneta, camión...">
+                        </div>
+                        <div class="field">
+                            <label>Color principal</label>
+                            <input type="text" name="color_name" placeholder="rojo, azul...">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <div class="field">
+                            <label>Modelo / referencia</label>
+                            <input type="text" name="model_name" placeholder="Hilux, civic, etc.">
+                        </div>
+                        <div class="field check-group">
+                            <label><input type="checkbox" name="has_logo"> Tiene logo</label>
+                            <label><input type="checkbox" name="is_person"> Persona</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Imagen de referencia</label>
+                        <input type="file" name="image" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="btn primary">Guardar en la lista</button>
+                </form>
+            </section>
+
+            <section class="panel glass watchlist-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Lista de vigilancia</h2>
+                        <p class="panel-subtitle">Visualiza rápidamente los perfiles que están siendo monitoreados.</p>
+                    </div>
+                    <span class="badge">{{ watchlist|length }} activos</span>
+                </div>
+                <div class="cards">
+                    {% for item in watchlist %}
+                    <article class="card">
+                        <img src="{{ url_for('watchlist_image', filename=item.image_path) }}" alt="{{ item.label }}" />
+                        <div class="card-body">
+                            <h3>{{ item.label }}</h3>
+                            <ul class="card-meta">
+                                <li><span>Tipo</span><strong>{{ item.vehicle_type or 'Desconocido' }}</strong></li>
+                                <li><span>Color</span><strong>{{ item.color_name or 'Desconocido' }}</strong></li>
+                                <li><span>Modelo</span><strong>{{ item.model_name or 'N/A' }}</strong></li>
+                            </ul>
+                            <div class="chip-group">
+                                <span class="chip {{ 'success' if item.has_logo else 'neutral' }}">Logo {{ 'sí' if item.has_logo else 'no' }}</span>
+                                <span class="chip {{ 'warning' if item.is_person else 'neutral' }}">{{ 'Persona' if item.is_person else 'Vehículo' }}</span>
+                            </div>
+                        </div>
+                    </article>
                     {% else %}
-                    <tr><td colspan="4">No se registraron eventos.</td></tr>
+                    <p class="empty-state">No hay elementos en la lista de vigilancia.</p>
                     {% endfor %}
-                </tbody>
-            </table>
-        </section>
-    </main>
+                </div>
+            </section>
+
+            <section class="panel glass events-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Últimos eventos</h2>
+                        <p class="panel-subtitle">Revisa las detecciones más recientes y analiza su precisión.</p>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Detectado</th>
+                                <th>Referencia</th>
+                                <th>Coincidencia</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detection in detections %}
+                            <tr>
+                                <td>{{ detection.created_at }}</td>
+                                <td>{{ detection.detected_label }}</td>
+                                <td>{{ detection.watchlist_entry.label if detection.watchlist_entry else 'Sin coincidencia' }}</td>
+                                <td>{{ '%.2f'|format(detection.match_score) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr class="empty-row">
+                                <td colspan="4">No se registraron eventos.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
 </body>
 </html>

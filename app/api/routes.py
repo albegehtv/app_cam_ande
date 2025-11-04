@@ -9,7 +9,16 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from ..config import settings
 from ..database import session_scope
 from ..models import AppState, WatchlistEntry
-from ..schemas import AlarmState, DetectionRead, DetectionResponse, WatchlistRead, WatchlistResponse
+from ..schemas import (
+    AlarmState,
+    CameraSettingsUpdate,
+    CameraState,
+    DetectionRead,
+    DetectionResponse,
+    WatchlistRead,
+    WatchlistResponse,
+)
+from ..services import camera as camera_service
 from ..services import events as events_service
 from ..services import watchlist as watchlist_service
 
@@ -79,3 +88,33 @@ def alarm_state() -> AlarmState:
             visual_alarm_active=state.visual_alarm_active,
             last_alarm_at=state.last_alarm_at,
         )
+
+
+@router.get("/camera", response_model=CameraState)
+def camera_status() -> CameraState:
+    state = camera_service.get_state()
+    return CameraState(**state)
+
+
+@router.post("/camera/connect", response_model=CameraState)
+def camera_connect(payload: CameraSettingsUpdate) -> CameraState:
+    try:
+        state = camera_service.connect(**payload.dict(exclude_unset=True))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return CameraState(**state)
+
+
+@router.post("/camera/disconnect", response_model=CameraState)
+def camera_disconnect() -> CameraState:
+    state = camera_service.disconnect()
+    return CameraState(**state)
+
+
+@router.patch("/camera", response_model=CameraState)
+def camera_update(payload: CameraSettingsUpdate) -> CameraState:
+    try:
+        state = camera_service.update(**payload.dict(exclude_unset=True))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return CameraState(**state)

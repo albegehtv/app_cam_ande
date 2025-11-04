@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from ..config import settings
+from ..services import camera as camera_service
 from ..services import events as events_service
 from ..services import watchlist as watchlist_service
 
@@ -23,12 +24,14 @@ templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent / "tem
 async def dashboard(request: Request):
     watchlist = watchlist_service.list_watchlist()
     detections = events_service.list_events()
+    camera_state = camera_service.get_state()
     return templates.TemplateResponse(
         "dashboard.html",
         {
             "request": request,
             "watchlist": watchlist,
             "detections": detections,
+            "camera_state": camera_state,
         },
     )
 
