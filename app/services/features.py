@@ -30,7 +30,7 @@ class FeatureVector:
 
     def to_dict(self) -> Dict:
         return {
-            "color_hist": list(self.color_hist),
+            "color_hist": [float(value) for value in self.color_hist],
             "average_color": list(self.average_color),
             "edge_density": float(self.edge_density),
         }
