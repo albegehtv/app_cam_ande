@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Panel de vigilancia inteligente{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+    <div class="page">
+        <header class="top-bar">
+            <a class="brand" href="/panel">Cam&Ande</a>
+            <div class="top-bar-actions">
+                {% if user %}
+                <div class="user-summary">
+                    <span class="avatar" aria-hidden="true">{{ (user.full_name or user.username)[0]|upper }}</span>
+                    <div class="user-meta">
+                        <strong>{{ user.full_name or user.username }}</strong>
+                        <span>{{ user.username }}</span>
+                    </div>
+                    <a class="pill-link" href="/logout">Cerrar sesión</a>
+                </div>
+                {% else %}
+                <nav class="top-bar-links">
+                    <a href="/login">Iniciar sesión</a>
+                    <a class="pill-link" href="/register">Crear cuenta</a>
+                </nav>
+                {% endif %}
+            </div>
+        </header>
+
+        {% block hero %}{% endblock %}
+
+        <main class="{% block main_class %}layout{% endblock %}">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            <p>Desarrollado para monitorear tu flota con precisión y estilo.</p>
+        </footer>
+    </div>
+    {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>

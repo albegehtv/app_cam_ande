@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import secrets
 from pathlib import Path
 from typing import Optional
 
@@ -74,6 +75,10 @@ class AppSettings(BaseModel):
     detections_dir: Path = Field(
         default_factory=lambda: Path(os.getenv("APP_DETECTIONS_DIR", "./detections")),
         description="Directory where snapshots from detections are saved.",
+    )
+    session_secret: str = Field(
+        default_factory=lambda: os.getenv("APP_SESSION_SECRET", secrets.token_urlsafe(48)),
+        description="Secret key used to sign session cookies.",
     )
 
     def ensure_directories(self) -> None:
