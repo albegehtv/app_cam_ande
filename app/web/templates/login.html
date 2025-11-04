@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar sesión · Cam&Ande{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+{% block main_class %}auth-layout{% endblock %}
+
+{% block hero %}
+<section class="hero compact">
+    <div class="hero-content">
+        <span class="hero-kicker">Acceso seguro</span>
+        <h1>Bienvenido de nuevo</h1>
+        <p>Ingresa a tu panel de control para monitorear en tiempo real tus cámaras y alertas inteligentes.</p>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="auth-card">
+    <h2>Inicia sesión</h2>
+    <p class="auth-subtitle">Utiliza tus credenciales registradas para continuar.</p>
+
+    {% if error %}
+    <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="stacked-form">
+        <input type="hidden" name="next" value="{{ next_url }}">
+        <div class="field">
+            <label for="username">Nombre de usuario</label>
+            <input id="username" name="username" type="text" value="{{ form_username or '' }}" autocomplete="username" required autofocus>
+        </div>
+        <div class="field">
+            <label for="password">Contraseña</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn primary full">Ingresar</button>
+    </form>
+
+    <p class="auth-footer">¿Aún no tienes cuenta? <a href="/register{% if next_url %}?next={{ next_url }}{% endif %}">Regístrate ahora</a>.</p>
+</section>
+{% endblock %}

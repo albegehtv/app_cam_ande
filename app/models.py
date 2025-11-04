@@ -4,7 +4,17 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, JSON, String
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    JSON,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -62,3 +72,14 @@ class AppState(Base):
             session.commit()
             session.refresh(instance)
         return instance
+
+
+class User(Base):
+    __tablename__ = "users"
+    __table_args__ = (UniqueConstraint("username", name="uq_users_username"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(64), nullable=False, unique=True)
+    full_name = Column(String(128), nullable=True)
+    password_hash = Column(String(256), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)

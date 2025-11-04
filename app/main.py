@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import RedirectResponse
+from starlette.middleware.sessions import SessionMiddleware
 
 from .api.routes import router as api_router
 from .config import settings
@@ -30,6 +31,13 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.session_secret,
+    max_age=60 * 60 * 24 * 7,
+    same_site="lax",
 )
 
 static_path = Path(__file__).resolve().parent / "web" / "static"
